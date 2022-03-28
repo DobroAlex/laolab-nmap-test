@@ -78,37 +78,31 @@ class NmapScanner(AbstractBaseScanner):
             run_start_meta_info['xmloutputversion'],
         )
 
-    def __get_host_info(self) -> list['nmap_dataclasses.Host']:
-        hosts: list[nmap_dataclasses.Host] = []
+    def __get_hosts_info(self) -> dict[str, tuple[bs4.element.Tag, nmap_dataclasses.Host]]:
+        root = self.__get_report_root
+        hosts: dict[str, tuple[bs4.element.Tag, nmap_dataclasses.Host]] = {}
         # TODO: These two for loops are not DRY
         #       (Although binning a new function can make it less readable)
-        for host_hint in self.__get_report_root.find_all('hosthint'):
-            for address in host_hint.find_all('address'):
-                hosts.append(
-                    nmap_dataclasses.Host(
-                        address.get('addr'),
-                        address.get('addrtype'),
-                    )
-                )
-        for host_name in self.__get_report_root.find_all('hostnames'):
-            for address in host_name.find_all('hostname'):
-                hosts.append(
-                    nmap_dataclasses.Host(
-                        address.get('name'),
-                        address.get('type'),
-                    )
-                )
+        for host in root.find_all('host'):
+            address_record: bs4.element.Tag = host.find('address')
+            address = address_record['addr']
+            address_type = address_record['addrtype']
+            host_record = nmap_dataclasses.Host(address, address_type, [], None)
+            hosts[address] = (host, host_record)
         return hosts
 
-    def __get_closed_ports(self) -> list['nmap_dataclasses.Port']:
+    @staticmethod
+    def __get_closed_ports(markdown: bs4.element.Tag) -> list['nmap_dataclasses.Port']:
         all_closed_ports: list['nmap_dataclasses.Port'] = []
-        closed_ports = self.__get_report_root.find('extraports', {'state': 'closed'})
+        closed_ports = markdown.find('extraports', {'state': 'closed'})
         for extra_reason in closed_ports.find_all('extrareasons'):
             reason: Optional[str] = extra_reason.get('reason')
             protocol: Optional[str] = extra_reason.get('proto')
-            raw_ports: str = extra_reason.get('ports', [])
+            raw_ports: str = extra_reason.get('ports', '')
             all_ports: list[int] = []
             for port_group in raw_ports.split(','):
+                if not port_group:
+                    continue
                 # Ports can be described as either single port or a group of ports delimited with a hyphen
                 if '-' in port_group:
                     port_range_start = int(port_group.split('-')[0])
@@ -135,9 +129,13 @@ class NmapScanner(AbstractBaseScanner):
 
         return all_closed_ports
 
-    def __get_all_ports_info(self) -> list['nmap_dataclasses.Port']:
+    def __get_all_ports_info(
+            self,
+            markdown: bs4.element.Tag,
+    ) -> list['nmap_dataclasses.Port']:
+
         open_ports = []
-        all_reported_ports = self.__get_report_root.find('ports')
+        all_reported_ports = markdown.find('ports')
         if all_reported_ports:
             reported_open_ports = all_reported_ports.find_all('port')
             for open_port in reported_open_ports:
@@ -157,16 +155,18 @@ class NmapScanner(AbstractBaseScanner):
                         extra_info=port_service.get('extrainfo'),
                     )
                 )
-        closed_ports = self.__get_closed_ports()
+        closed_ports = self.__get_closed_ports(markdown)
         all_ports = open_ports + closed_ports
         all_ports.sort(key=lambda p: p.port_num)
         return all_ports
 
-    def __get_os_version(self) -> Optional['nmap_dataclasses.OsVersion']:
-        root = self.__get_report_root
+    def __get_os_version(
+            self,
+            markdown: bs4.element.Tag,
+    ) -> Optional['nmap_dataclasses.OsVersion']:
         all_os_matches: list['nmap_dataclasses.OsVersion'] = []
 
-        for os_match in root.find_all('osmatch'):
+        for os_match in markdown.find_all('osmatch'):
             for sub_version in os_match.find_all('osclass'):
                 os_name = f'{sub_version.get("vendor", "")} {sub_version.get("os_gen", "")} {sub_version.get("osgen")}'
                 accuracy = nmap_utils.get_os_version_accuracy(sub_version)
@@ -192,15 +192,15 @@ class NmapScanner(AbstractBaseScanner):
 
     def parse_output(self):
         nmap_run_meta = self.__get_meta_info()
-        hosts = self.__get_host_info()
-        all_ports = self.__get_all_ports_info()
-        os_version = self.__get_os_version()
+        hosts = self.__get_hosts_info()
+        for host_ip, host_data in hosts.items():
+            markdown, host = host_data
+            host.ports = self.__get_all_ports_info(markdown)
+            host.os_version = self.__get_os_version(markdown)
 
         return nmap_dataclasses.NmpRunReport(
             self.context.program_args.scan_target,
             self.context.program_args.output_file,
             nmap_run_meta,
-            hosts,
-            all_ports,
-            os_version
+            [host[1] for host in hosts.values()]
         )

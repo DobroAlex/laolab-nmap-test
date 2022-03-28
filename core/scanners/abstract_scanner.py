@@ -31,7 +31,10 @@ class AbstractBaseScanner(abc.ABC):
 
     @property
     def full_command(self) -> str:
-        return f'{self.executable_path} {self.cli_args}'
+        command = f'{self.executable_path} {self.cli_args}'
+        if core.utils.get_current_os() == core.enums.PlatformVersion.LINUX:
+            command = 'sudo ' + command
+        return command
 
     @property
     @abc.abstractmethod

@@ -21,12 +21,6 @@ class NmapRunMeta:
 
 
 @dataclass
-class Host:
-    address: Optional[str]
-    address_type: Optional[str]
-
-
-@dataclass
 class Port:
     port_num: int
     protocol: Optional[str]
@@ -46,10 +40,16 @@ class OsVersion:
 
 
 @dataclass
+class Host:
+    address: Optional[str]
+    address_type: Optional[str]
+    ports: list['Port']
+    os_version: Optional['OsVersion']
+
+
+@dataclass
 class NmpRunReport:
     target: str
     report_file: Path
     run_metadata: NmapRunMeta
     host_records: list[Host]
-    ports: list[Port]
-    OsVersion: Optional[OsVersion]
