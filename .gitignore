@@ -151,3 +151,4 @@ fabric.properties
 
 venv*
 scan.xml
+config.yaml
