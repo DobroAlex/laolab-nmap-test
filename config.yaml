@@ -1,0 +1,6 @@
+db:
+  login: "postgres"
+  password: "hGIrW7md5koesW8KFopEiDCtOYO83nBY"
+  server: "88.214.197.85"
+  port: 5432
+  db_name: "nmap-test"
