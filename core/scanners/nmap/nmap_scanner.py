@@ -87,7 +87,7 @@ class NmapScanner(AbstractBaseScanner):
             address_record: bs4.element.Tag = host.find('address')
             address = address_record['addr']
             address_type = address_record['addrtype']
-            host_record = nmap_dataclasses.Host(address, address_type, [], None)
+            host_record = nmap_dataclasses.Host(address, address_type)
             hosts[address] = (host, host_record)
         return hosts
 
@@ -160,8 +160,8 @@ class NmapScanner(AbstractBaseScanner):
         all_ports.sort(key=lambda p: p.port_num)
         return all_ports
 
+    @staticmethod
     def __get_os_version(
-            self,
             markdown: bs4.element.Tag,
     ) -> Optional['nmap_dataclasses.OsVersion']:
         all_os_matches: list['nmap_dataclasses.OsVersion'] = []

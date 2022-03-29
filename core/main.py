@@ -15,15 +15,15 @@ class MainRunner:
             ]
         ]
 
-        for scanner in scanners:
-            scanner.run()
-            if not scanner.is_return_code_ok:
-                raise RuntimeError(
-                    f'{scanner.name} terminated improperly:\n'
-                    f'STDOUT: {scanner.process.stdout}\n\n\n'
-                    f'STDERR: {scanner.process.stderr}\n\n\n'
-                    f'EXIT CODE: {scanner.process.process.returncode}'
-                )
+        # for scanner in scanners:
+        #    scanner.run()
+        #    if not scanner.is_return_code_ok:
+        #        raise RuntimeError(
+        #            f'{scanner.name} terminated improperly:\n'
+        #            f'STDOUT: {scanner.process.stdout}\n\n\n'
+        #            f'STDERR: {scanner.process.stderr}\n\n\n'
+        #            f'EXIT CODE: {scanner.process.process.returncode}'
+        #        )
 
         for scanner in scanners:
             scanner.parse_output()

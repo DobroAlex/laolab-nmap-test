@@ -1,5 +1,5 @@
 import datetime
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Union, Optional
 
@@ -35,16 +35,16 @@ class Port:
 
 @dataclass
 class OsVersion:
-    name: str
-    accuracy: int
+    name: Optional[str] = field(default=None)
+    accuracy: Optional[int] = field(default=None)
 
 
 @dataclass
 class Host:
     address: Optional[str]
     address_type: Optional[str]
-    ports: list['Port']
-    os_version: Optional['OsVersion']
+    ports: list['Port'] = field(default_factory=list)
+    os_version: 'OsVersion' = field(default_factory=OsVersion)
 
 
 @dataclass
