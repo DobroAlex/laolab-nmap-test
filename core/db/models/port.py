@@ -3,7 +3,7 @@ from typing import Optional
 import sqlalchemy as sa
 from sqlalchemy import orm
 
-from core.db import Base
+from core.db.models import Base
 
 
 class Port(Base):

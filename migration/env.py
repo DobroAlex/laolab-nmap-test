@@ -13,6 +13,7 @@ except Exception as e:
     print(e)
 
 import core
+import core.db.models
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -32,7 +33,7 @@ fileConfig(alembic_config.config_file_name)
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 
-target_metadata = core.db.Base.metadata
+target_metadata = core.db.models.Base.metadata
 
 
 # other values from the alembic_config, defined by the needs of env.py,
