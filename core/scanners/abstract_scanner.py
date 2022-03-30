@@ -45,10 +45,6 @@ class AbstractBaseScanner(abc.ABC):
     def parse_output(self):
         ...
 
-    @abc.abstractmethod
-    def get_db_representation(self):
-        ...
-
     def run(self) -> None:
         print(f'Starting {self.name} from {self.work_dir} with the following args:\n{self.full_command}')
         self.process = core.utils.spawn_and_communicate_with_subprocess(

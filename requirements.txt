@@ -9,3 +9,5 @@ psycopg2==2.9.3
 PyYAML==6.0
 soupsieve==2.3.1
 SQLAlchemy==1.4.32
+
+shortuuid~=1.0.8
