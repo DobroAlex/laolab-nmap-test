@@ -1,4 +1,7 @@
+import core.db.models
 from core import cli
+from core.db.controller.pg_controller import PgController
+from core.db.session.pg_session import PgSession
 from core.scanners.nmap.nmap_scanner import NmapScanner
 from core.context import Context
 
@@ -27,3 +30,11 @@ class MainRunner:
 
         for scanner in scanners:
             scanner.parse_output()
+
+        with PgController(self.context) as pg_controller:
+            with PgSession(pg_controller) as pg_session:
+                for scanner in scanners:
+                    for item in scanner.to_db_repr:
+                        pg_session.session.add(item)
+                        pg_session.commit()
+                    # pg_session.session.add_all(scanner.to_db_repr)

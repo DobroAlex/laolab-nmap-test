@@ -15,7 +15,7 @@ class PgController:
             self.__context.config.db.db_connection_string,
             echo=False,
         )
-        yield self
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.engine is not None:

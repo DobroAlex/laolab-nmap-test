@@ -6,9 +6,10 @@ from typing import Optional, Union
 import core.utils
 from core.utils import FinishedProcess
 from core.context import Context
+from core.converters.scanner_converter import ScannerConverter
 
 
-class AbstractBaseScanner(abc.ABC):
+class AbstractBaseScanner(ScannerConverter, abc.ABC):
     def __init__(self, context: 'Context'):
         self.context = context
         self.process: Optional[FinishedProcess] = None

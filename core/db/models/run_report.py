@@ -12,7 +12,7 @@ class RunReport(Base):
     scan_target_id = sa.Column(
         sa.BIGINT,
         sa.ForeignKey(
-            'scan_targets.id',
+            'scan_target.id',
             ondelete="CASCADE",
         ),
         nullable=False,
@@ -25,9 +25,10 @@ class RunReport(Base):
     nmap_version = sa.Column(sa.TEXT, nullable=False)
     xml_version = sa.Column(sa.TEXT, nullable=False)
 
-    target = orm.relationship("ScanTarget", lazy="joined")
+    scan_target = orm.relationship("ScanTarget", back_populates='run_reports', lazy="joined")
     hosts = orm.relationship(
         "Host",
+        back_populates='run_reports',
         lazy="joined",
         cascade="all, delete",
         passive_deletes=True,

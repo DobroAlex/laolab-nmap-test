@@ -16,7 +16,7 @@ class PgSession:
         self.session = sqlalchemy.orm.Session(
             self._controller.engine,
         )
-        yield self
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         # TODO: analyze exec_type.
@@ -40,6 +40,7 @@ class PgSession:
         self.close()
 
     def commit(self):
+        self.session.flush()
         self.session.commit()
 
     def rollback(self):

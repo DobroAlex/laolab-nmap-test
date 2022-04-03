@@ -29,10 +29,11 @@ class Port(Base):
     os_type = sa.Column(sa.TEXT, nullable=True)
     extra_info = sa.Column(sa.TEXT, nullable=True)
 
-    host = orm.relationship("Host", lazy="joined")
+    hosts = orm.relationship("Host", back_populates='ports', lazy="joined")
 
     def __init__(
             self,
+            host_id: int,
             port_num: int,
             protocol: Optional[str],
             state: str,
@@ -43,6 +44,7 @@ class Port(Base):
             os_type: Optional[str],
             extra_info: Optional[str],
     ):
+        self.host_id = host_id
         self.port_num = port_num
         self.protocol = protocol
         self.state = state

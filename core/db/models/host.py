@@ -21,15 +21,17 @@ class Host(Base):
     address = sa.Column(sa.TEXT, nullable=True, unique=False)
     address_type = sa.Column(sa.TEXT, nullable=True, unique=False)
 
-    run_report = orm.relationship("RunReport", lazy="joined")
+    run_reports = orm.relationship("RunReport", back_populates='hosts', lazy="joined")
     ports = orm.relationship(
         "Port",
+        back_populates='hosts',
         lazy="joined",
         cascade="all, delete",
         passive_deletes=True,
     )
     os_version = orm.relationship(
         "OsVersion",
+        back_populates='hosts',
         lazy="joined",
         cascade="all, delete",
         passive_deletes=True,

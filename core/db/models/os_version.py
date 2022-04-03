@@ -5,7 +5,7 @@ from core.db.models import Base
 
 
 class OsVersion(Base):
-    __tablename__ = 'os_versions'
+    __tablename__ = 'os_version'
     id = sa.Column(sa.BIGINT, primary_key=True)
     host_id = sa.Column(
         sa.BIGINT,
@@ -19,7 +19,7 @@ class OsVersion(Base):
     name = sa.Column(sa.TEXT, nullable=True)
     accuracy = sa.Column(sa.SMALLINT, nullable=True)
 
-    host = orm.relationship("Host", lazy="joined")
+    hosts = orm.relationship("Host", back_populates='os_version', lazy="joined")
 
     def __init__(
             self,

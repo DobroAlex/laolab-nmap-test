@@ -9,6 +9,7 @@ from core.scanners.abstract_scanner import AbstractBaseScanner
 
 import core.scanners.nmap.dataclasses as nmap_dataclasses
 import core.scanners.nmap.utils as nmap_utils
+import core.db.models as db_models
 
 
 class NmapScanner(AbstractBaseScanner):
@@ -61,6 +62,31 @@ class NmapScanner(AbstractBaseScanner):
         if 'No targets were specified, so 0 hosts scanned' in self.process.stdout:
             return False
         return True
+
+    @property
+    def to_db_repr(self) -> list['db_models.Base']:
+        report_records = []
+        parsed_output = self.parse_output()
+        target = db_models.ScanTarget(parsed_output.target)
+        run_report = db_models.RunReport(
+            target.id,
+            **parsed_output.run_metadata.__dict__,
+        )
+        report_records.extend([target, run_report])
+
+        for host in parsed_output.host_records:
+            host_record = db_models.Host(
+                run_report.id,
+                host.address,
+                host.address_type,
+            )
+            ports = [db_models.Port(host_record.id, **p.__dict__) for p in host.ports]
+            os_version = db_models.OsVersion(host_record.id, **host.os_version.__dict__)
+            report_records.append(host_record)
+            report_records.extend(ports)
+            report_records.append(os_version)
+
+        return report_records
 
     def __get_meta_info(self) -> 'nmap_dataclasses.NmapRunMeta':
         report_root = self.__get_report_root
