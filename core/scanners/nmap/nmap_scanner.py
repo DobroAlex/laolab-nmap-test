@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, Generator
 
 # TODO: importing style should be unified
 import bs4
@@ -64,15 +64,15 @@ class NmapScanner(AbstractBaseScanner):
         return True
 
     @property
-    def to_db_repr(self) -> list['db_models.Base']:
-        report_records = []
+    def to_db_repr(self) -> Generator['db_models.Base']:
         parsed_output = self.parse_output()
         target = db_models.ScanTarget(parsed_output.target)
+        yield target
         run_report = db_models.RunReport(
             target.id,
             **parsed_output.run_metadata.__dict__,
         )
-        report_records.extend([target, run_report])
+        yield run_report
 
         for host in parsed_output.host_records:
             host_record = db_models.Host(
@@ -80,13 +80,10 @@ class NmapScanner(AbstractBaseScanner):
                 host.address,
                 host.address_type,
             )
-            ports = [db_models.Port(host_record.id, **p.__dict__) for p in host.ports]
-            os_version = db_models.OsVersion(host_record.id, **host.os_version.__dict__)
-            report_records.append(host_record)
-            report_records.extend(ports)
-            report_records.append(os_version)
-
-        return report_records
+            yield host_record
+            for p in [db_models.Port(host_record.id, **p.__dict__) for p in host.ports]:
+                yield p
+            yield db_models.OsVersion(host_record.id, **host.os_version.__dict__)
 
     def __get_meta_info(self) -> 'nmap_dataclasses.NmapRunMeta':
         report_root = self.__get_report_root

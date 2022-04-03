@@ -39,8 +39,11 @@ class PgSession:
                 raise rollback_err from err
         self.close()
 
-    def commit(self):
+    def flush(self):
         self.session.flush()
+
+    def commit(self):
+        self.flush()
         self.session.commit()
 
     def rollback(self):

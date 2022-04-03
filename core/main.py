@@ -35,6 +35,7 @@ class MainRunner:
             with PgSession(pg_controller) as pg_session:
                 for scanner in scanners:
                     for item in scanner.to_db_repr:
+                        # Note: flushing 1k of ports takes a lot of time
+                        #       but at the moment it's the only way to create object IDs
                         pg_session.session.add(item)
-                        pg_session.commit()
-                    # pg_session.session.add_all(scanner.to_db_repr)
+                        pg_session.flush()
