@@ -1,0 +1,18 @@
+FROM python:3.10-bullseye
+
+# Avoid dialgos with APT
+ENV DEBIAN_FRONTEND noninteractive
+ENV DEBCONF_NONINTERACTIVE_SEEN true
+ENV USER_HOME_DIR "/root"
+ENV WORKDIR "/opt/scripts/nmap-test-task"
+
+WORKDIR $WORKDIR
+COPY . $WORKDIR
+
+RUN apt update && apt --yes  upgrade
+RUN . assets/docker/set_locale.sh
+RUN . assets/docker/set_tz.sh
+
+RUN pip install -r requirements.txt --upgrade --no-cache-dir
+
+CMD "/bin/bash"
