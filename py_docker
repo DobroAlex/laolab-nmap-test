@@ -3,16 +3,25 @@ FROM python:3.10-bullseye
 # Avoid dialgos with APT
 ENV DEBIAN_FRONTEND noninteractive
 ENV DEBCONF_NONINTERACTIVE_SEEN true
-ENV USER_HOME_DIR "/root"
-ENV WORKDIR "/opt/scripts/nmap-test-task"
+ENV MAIN_USER "deploy"
+ENV USER_HOME_DIR "/home/${MAIN_USER}"
+ENV WORKDIR "${USER_HOME_DIR}/nmap-test-task"
+
+
+RUN useradd -m  -d $USER_HOME_DIR -s "/bin/bash" deploy
 
 WORKDIR $WORKDIR
 COPY . $WORKDIR
 
-RUN apt update && apt --yes  upgrade
-RUN . assets/docker/set_locale.sh
-RUN . assets/docker/set_tz.sh
+RUN chmod -R 750 $WORKDIR
+RUN chown -R $MAIN_USER:$MAIN_USER $WORKDIR
 
+RUN apt update && apt --yes  upgrade
+RUN . $WORKDIR/assets/docker/set_locale.sh
+RUN . $WORKDIR/assets/docker/set_tz.sh
+
+USER $MAIN_USER
+RUN python3 -m venv venv && . venv/bin/activate
 RUN pip install -r requirements.txt --upgrade --no-cache-dir
 
 CMD "/bin/bash"
